@@ -1,0 +1,14 @@
+// 將您的設定放入此檔案中以覆寫預設值
+{
+  "clang.completion.triggerChars": [
+    ".",
+    ">"
+  ],
+    "clang.cxxflags": ["-std=c++14"],
+      // 控制字型大小 (以像素為單位)。
+  "editor.fontSize": 16,
+  "editor.tabSize": 2,
+  "editor.renderWhitespace": "boundary",
+  "editor.minimap.enabled": true,
+  "window.zoomLevel": 0
+}

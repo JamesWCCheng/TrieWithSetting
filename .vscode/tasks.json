@@ -1,0 +1,26 @@
+{
+    "version": "0.1.0",
+
+    "osx": {
+         "command": "clang++"
+    },
+     "linux": {
+		"command": "clang++"
+
+	},
+    "args": ["-g", "main.cpp", "test.cpp", "-g", "-std=c++11", "-lpthread", "-D_GLIBCXX_DEBUG", "-fno-limit-debug-info"],
+    "name": "build",
+    "problemMatcher": {
+        "owner": "cpp",
+        "fileLocation": ["relative", "${workspaceRoot}"],
+        "pattern": {
+            "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "severity": 4,
+            "message": 5
+        }
+    },
+    "echoCommand":true
+}
