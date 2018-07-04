@@ -1,4 +1,3 @@
-#include "LRUCache.h"
 #include "Trie.h"
 #include "usersettingapis.h"
 #include "utils.h"
@@ -90,22 +89,6 @@ int main()
 
 // int main()
 // {
-//   // Test LRU
-//   CLRUCache<int, int> q;
-//   q.Put(1, 5566);
-//   q.Put(2, 7788);
-//   std::cout << q.Get(1).first << q.Get(2).first << std::endl;
-//   auto qq = q;
-//   std::cout << qq.Get(1).first << qq.Get(2).first << std::endl;
-//   auto qqq = std::move(q);
-//   std::cout << qqq.Get(1).first << qqq.Get(2).first << std::endl;
-//   CLRUCache<int, int> q2;
-//   CLRUCache<int, int> q3;
-//   q2 = qq;
-//   q3 = std::move(qq);
-//   std::cout << q2.Get(1).first << q2.Get(2).first << std::endl;
-//   std::cout << q3.Get(1).first << q3.Get(2).first << std::endl;
-
 //   // Test Trie
 //   string input[] =
 //       {

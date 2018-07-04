@@ -286,12 +286,11 @@ namespace {
   }
 } //namespace
 
-// #ifdef _MSC_VER
-// #define FUNC_NAME __FUNCSIG__
-// #else
-// #define FUNC_NAME __PRETTY_FUNCTION__
-// #endif
+#ifdef _MSC_VER
+#define FUNC_NAME __FUNCSIG__
+#else
 #define FUNC_NAME __PRETTY_FUNCTION__
+#endif
 
 #define P(...) PInternal("", __FILE__, FUNC_NAME, __LINE__, EXTEND(__VA_ARGS__))
 #define PR(...) PInternal(EZ_LIGHT_RED, __FILE__, FUNC_NAME, __LINE__, EXTEND(__VA_ARGS__))

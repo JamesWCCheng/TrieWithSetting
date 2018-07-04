@@ -1,15 +1,21 @@
+#ifndef UTILS_H
+#define UTILS_H
 #include <iostream>
 #include <string>
 #include <chrono>
 #include <thread>
 #include <sstream>
 
-#define FUNC_NAME __PRETTY_FUNCTION__
+#ifndef __PRETTY_FUNCTION__
+#define FUNCNAME __FUNCSIG__
+#else
+#define FUNCNAME __PRETTY_FUNCTION__
+#endif
 
 #define PrintTID(...) \
-  Utils::PrintTid(__FILE__, FUNC_NAME, __LINE__, ##__VA_ARGS__);
+  Utils::PrintTid(__FILE__, FUNCNAME, __LINE__, ##__VA_ARGS__);
 #define SleepFor(SEC) \
-  Utils::Sleep(SEC, __FILE__, FUNC_NAME, __LINE__);
+  Utils::Sleep(SEC, __FILE__, FUNCNAME, __LINE__);
 namespace Utils
 {
     void PrintTid(const char* file,
@@ -32,3 +38,5 @@ namespace Utils
       PrintTid(std::forward<Args>(args)..., "stop sleep");
     }
 }
+
+#endif UTILS_H
