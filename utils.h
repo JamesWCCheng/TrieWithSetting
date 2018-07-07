@@ -6,7 +6,7 @@
 #include <thread>
 #include <sstream>
 
-#ifndef __PRETTY_FUNCTION__
+#ifdef _MSC_VER
 #define FUNCNAME __FUNCSIG__
 #else
 #define FUNCNAME __PRETTY_FUNCTION__
@@ -39,4 +39,4 @@ namespace Utils
     }
 }
 
-#endif UTILS_H
+#endif //UTILS_H

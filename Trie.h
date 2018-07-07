@@ -95,23 +95,88 @@ private:
   std::shared_ptr<BaseValue> value_;
 }; // class Value
 
-class Settings
+class ISettingHandler
 {
 public:
-  template <class T>
-  void set(const std::string &key, T value)
+  virtual ~ISettingHandler() {}
+  using SettingChangedCallbackType = std::function<void(/*setting*/)>;
+  //weak_ptr<>
+  virtual void Set(Value) = 0;
+  virtual Value Get() = 0;
+  virtual void Listen(SettingChangedCallbackType) = 0;
+  virtual void UnListen() = 0;
+};
+
+class CUserType1SettingHandler
+    : public ISettingHandler,
+      public ISettingChanged<Type1Setting>,
+      public std::enable_shared_from_this<CUserType1SettingHandler>
+{
+public:
+  void Set(/*Object*/ Value aValue) override {}
+  /*Object*/ Value Get() override { return Value(); }
+  void Listen(SettingChangedCallbackType aCallback) override
   {
-    settings_[key] = typename Cast<T>::type(std::move(value));
+    AllSettings::getinstance()->getType1().Register(shared_from_this());
+    iCallback = std::move(aCallback);
+  }
+
+  void UnListen(/*need callback*/) override
+  {
+    AllSettings::getinstance()->getType1().UnRegister();
+    iCallback = nullptr;
+  }
+
+  void OnSettingChanged(Type1Setting aSettingType) override
+  {
+    // cout << "CUserType1SettingHandler::" << __func__ << endl;
+    // Got the changing evnet, but needs to query the value then callback.
+    iCallback();
+  }
+
+private:
+  SettingChangedCallbackType iCallback;
+};
+
+class Setting
+{
+  const std::string iKey;
+  const std::string iDescription;
+  std::unique_ptr<ISettingHandler> iHandler;
+public:
+  enum ESettingType
+  {
+    kBoolean,
+    kInteger,
+    kEnum,
+    kString
+  };
+  Setting(const std::string& aKey, ESettingType aKeyType, const std::string& aDescription, std::unique_ptr<ISettingHandler> aHandler) :
+    iKey(aKey),
+    iDescription(aDescription),
+    iHandler(move(aHandler))
+  {
+
+  }
+  const std::string& Key() const
+  {
+    return iKey;
+  }
+  const std::string& Description() const
+  {
+    return iDescription;
+  }
+  template <class T>
+  void set(const std::string &key, T aValue)
+  {
+     iHandler->Set(typename Cast<T>::type(std::move(aValue)));
+    // pass to handler
   }
 
   Value get(const std::string &key) const
   {
-    auto itr = settings_.find(key);
-    if (itr == settings_.end())
-    {
-      throw Exception("No key " + key);
-    }
-    return itr->second;
+    // from handler
+    return iHandler->Get();
   }
 
 private:
@@ -125,30 +190,28 @@ private:
   template <class T>
   struct Cast<T, true, true, false>
   {
-    typedef bool type;
+    using type = bool;
   };
 
   template <class T>
   struct Cast<T, false, true, false>
   {
-    typedef int type;
+    using type = int;
   };
 
   template <class T>
   struct Cast<T, false, false, true>
   {
-    typedef std::string type;
+    using type = std::string;
   };
-
-  std::unordered_map<std::string, Value> settings_;
-}; // class Settings
+}; // class Setting
 
 struct CTrieNode
 {
   using NodeValueType = char;
-  CTrieNode() : iIsWord(false) {}
+  CTrieNode(){}
 
-  bool iIsWord;
+  std::shared_ptr<Setting> iSettingObject;
   std::unordered_map<NodeValueType, std::unique_ptr<CTrieNode>> iChildren;
 };
 
@@ -160,7 +223,7 @@ struct CTrie
   {
   }
 
-  void Insert(const std::string &aPrefix)
+  void Insert(const std::string &aPrefix, std::shared_ptr<Setting> aSetting)
   {
     auto current = iRoot.get();
     for (char c : aPrefix)
@@ -173,18 +236,10 @@ struct CTrie
       }
       current = current->iChildren[c].get();
     }
-    current->iIsWord = true;
+    current->iSettingObject = aSetting;
   }
 
-  void Insert(const std::vector<std::string> &aPrefixVec)
-  {
-    for (const auto &pre : aPrefixVec)
-    {
-      Insert(pre);
-    }
-  }
-
-  bool Search(const std::string &aKey)
+  std::shared_ptr<Setting> Search(const std::string &aKey)
   {
     auto current = iRoot.get();
     for (char c : aKey)
@@ -192,11 +247,11 @@ struct CTrie
       if (current == nullptr ||
           current->iChildren.find(c) == current->iChildren.end())
       {
-        return false;
+        return nullptr;
       }
       current = current->iChildren[c].get();
     }
-    return current->iIsWord;
+    return current->iSettingObject;
   }
 
   std::vector<std::string> Suggest(const std::string &aPrefix)
@@ -239,7 +294,7 @@ struct CTrie
     {
       auto p = q.front();
       q.pop();
-      if (p.second->iIsWord)
+      if (p.second->iSettingObject)
       {
         result.push_back(p.first);
       }

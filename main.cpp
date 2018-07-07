@@ -11,48 +11,6 @@
 
 using namespace std;
 
-class ISettingHandler
-{
-public:
-  virtual ~ISettingHandler() {}
-  using SettingChangedCallbackType = function<void(/*setting*/)>;
-  //weak_ptr<>
-  virtual void Set() = 0;
-  virtual void Get() = 0;
-  virtual void Listen(SettingChangedCallbackType) = 0;
-  virtual void UnListen() = 0;
-};
-
-class CUserType1SettingHandler
-    : public ISettingHandler,
-      public ISettingChanged<Type1Setting>,
-      public enable_shared_from_this<CUserType1SettingHandler>
-{
-public:
-  void Set(/*Object*/) override {}
-  /*Object*/ void Get() override {}
-  void Listen(SettingChangedCallbackType aCallback) override
-  {
-    AllSettings::getinstance()->getType1().Register(shared_from_this());
-    iCallback = std::move(aCallback);
-  }
-
-  void UnListen(/*need callback*/) override
-  {
-    AllSettings::getinstance()->getType1().UnRegister();
-    iCallback = nullptr;
-  }
-
-  void OnSettingChanged(Type1Setting aSettingType) override
-  {
-    // cout << "CUserType1SettingHandler::" << __func__ << endl;
-    // Got the changing evnet, but needs to query the value then callback.
-    iCallback();
-  }
-
-private:
-  SettingChangedCallbackType iCallback;
-};
 
 class SettingManager
 {
@@ -68,6 +26,8 @@ private:
 
 int main()
 {
+
+  cout<<sizeof(long double);
   auto type1handler = make_shared<CUserType1SettingHandler>();
   type1handler->Listen([]() { cout << "Got Callback" << endl; });
 
@@ -82,6 +42,8 @@ int main()
       PR0();
     }
   });
+
+  CTrie trie;
 
   getchar();
   return 0;
